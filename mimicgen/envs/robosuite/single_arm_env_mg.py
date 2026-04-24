@@ -60,18 +60,32 @@ class SingleArmEnv_MG(SingleArmEnv):
             # replace all paths to mimicgen assets
             check_lst = [loc for loc, val in enumerate(old_path_split) if val == "mimicgen"]
             if len(check_lst) > 0:
-                ind = max(check_lst) # last occurrence index
-                new_path_split = os.path.split(mimicgen.__file__)[0].split("/") + old_path_split[ind + 1 :]
-                new_path = "/".join(new_path_split)
-                elem.set("file", new_path)
+                ind = max(check_lst)  # last occurrence index
+                # Conda envs are often .../envs/<name>/lib/python3.x/... If <name> is "mimicgen",
+                # the path segment matches the package name but must not be remapped to the repo.
+                next_seg = old_path_split[ind + 1] if ind + 1 < len(old_path_split) else None
+                py_ver = old_path_split[ind + 2] if ind + 2 < len(old_path_split) else ""
+                conda_env_false_positive = (
+                    next_seg == "lib" and py_ver.startswith("python3")
+                )
+                if not conda_env_false_positive:
+                    new_path_split = os.path.split(mimicgen.__file__)[0].split("/") + old_path_split[ind + 1 :]
+                    new_path = "/".join(new_path_split)
+                    elem.set("file", new_path)
 
             # note: needed since some datasets may have old paths when repo was named mimicgen_envs
             check_lst = [loc for loc, val in enumerate(old_path_split) if val == "mimicgen_envs"]
             if len(check_lst) > 0:
-                ind = max(check_lst) # last occurrence index
-                new_path_split = os.path.split(mimicgen.__file__)[0].split("/") + old_path_split[ind + 1 :]
-                new_path = "/".join(new_path_split)
-                elem.set("file", new_path)
+                ind = max(check_lst)  # last occurrence index
+                next_seg = old_path_split[ind + 1] if ind + 1 < len(old_path_split) else None
+                py_ver = old_path_split[ind + 2] if ind + 2 < len(old_path_split) else ""
+                conda_env_false_positive = (
+                    next_seg == "lib" and py_ver.startswith("python3")
+                )
+                if not conda_env_false_positive:
+                    new_path_split = os.path.split(mimicgen.__file__)[0].split("/") + old_path_split[ind + 1 :]
+                    new_path = "/".join(new_path_split)
+                    elem.set("file", new_path)
 
             # replace all paths to robosuite_task_zoo assets
             check_lst = [loc for loc, val in enumerate(old_path_split) if val == "robosuite_task_zoo"]
